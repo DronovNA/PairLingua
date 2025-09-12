@@ -1,6 +1,6 @@
 import uuid
 from datetime import datetime
-from sqlalchemy import Column, DateTime, Integer, ARRAY, ForeignKey
+from sqlalchemy import Column, DateTime, Integer, ARRAY, ForeignKey, func
 from sqlalchemy.dialects.postgresql import UUID, JSONB
 from sqlalchemy.orm import relationship
 
@@ -20,8 +20,8 @@ class StudySession(Base):
     session_data = Column(JSONB, default=dict)  # Additional session info
     
     # Timestamps
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = Column(DateTime, default=func.now())
+    updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
     expires_at = Column(DateTime)  # Session expiry
     
     # Relationships
@@ -32,4 +32,4 @@ class StudySession(Base):
         """Check if session has expired"""
         if self.expires_at is None:
             return False
-        return datetime.utcnow() > self.expires_at
+        return func.now() > self.expires_at

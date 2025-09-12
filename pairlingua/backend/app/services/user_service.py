@@ -1,18 +1,17 @@
 from datetime import datetime, timedelta
-from typing import Optional, Dict, Any, List
+from typing import Dict, Any, List
 from sqlalchemy.orm import Session
-from sqlalchemy import func, and_, desc
+from sqlalchemy import func, desc
 
-from app.models.user import User, Profile
+from app.models.user import User
 from app.models.user_card import UserCard
 from app.models.review import Review
-from app.models.achievement import UserAchievement
 from app.schemas.user import (
-    UserUpdate, UserStats, UserStatsDetailed, 
-    UserProfile as UserProfileSchema
+    UserUpdate, UserStats, UserStatsDetailed,
 )
 from app.core.exceptions import NotFoundException, ValidationException
 from app.core.security import create_password_hash, verify_password
+from app.schemas.word import WordPair
 
 
 class UserService:
@@ -54,13 +53,13 @@ class UserService:
         for field, value in update_dict.items():
             setattr(user, field, value)
         
-        user.updated_at = datetime.utcnow()
+        user.updated_at = func.now()
         self.db.commit()
         self.db.refresh(user)
         
         return user
     
-    def get_user_stats(self, user_id: str) -> UserStats:
+    async def get_user_stats(self, user_id: str) -> UserStats:
         """Get user's learning statistics"""
         
         user = self.get_user_profile(user_id)
@@ -73,7 +72,7 @@ class UserService:
         # Cards due for review
         cards_due = self.db.query(UserCard).filter(
             UserCard.user_id == user_id,
-            UserCard.due_date <= datetime.utcnow(),
+            UserCard.due_date <= func.now(),
             UserCard.is_suspended == False
         ).count()
         
@@ -134,7 +133,7 @@ class UserService:
             weekly_stats=weekly_stats
         )
     
-    def get_user_detailed_stats(
+    async def get_user_detailed_stats(
         self, 
         user_id: str, 
         date_range: str = "30days"
@@ -142,7 +141,7 @@ class UserService:
         """Get detailed user statistics for a specific period"""
         
         # Calculate date range
-        end_date = datetime.utcnow()
+        end_date = func.now()
         if date_range == "7days":
             start_date = end_date - timedelta(days=7)
         elif date_range == "30days":
@@ -261,7 +260,7 @@ class UserService:
             raise ValidationException("Current password is incorrect")
         
         user.password_hash = create_password_hash(new_password)
-        user.updated_at = datetime.utcnow()
+        user.updated_at = func.now()
         
         self.db.commit()
         return True
@@ -270,7 +269,7 @@ class UserService:
         """Soft delete user account"""
         
         user = self.get_user_profile(user_id)
-        user.deleted_at = datetime.utcnow()
+        user.deleted_at = func.now()
         user.is_active = False
         
         self.db.commit()
@@ -294,7 +293,7 @@ class UserService:
             return 0
         
         streak = 0
-        current_date = datetime.utcnow().date()
+        current_date = func.now().date()
         
         for (review_date,) in review_dates:
             if review_date == current_date or review_date == current_date - timedelta(days=1):
@@ -309,7 +308,7 @@ class UserService:
         """Get last 7 days of study statistics"""
         
         weekly_stats = []
-        today = datetime.utcnow().date()
+        today = func.now().date()
         
         for i in range(7):
             date = today - timedelta(days=i)

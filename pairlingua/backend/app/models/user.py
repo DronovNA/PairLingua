@@ -1,8 +1,9 @@
 import uuid
-from datetime import datetime
-from sqlalchemy import Column, String, DateTime, Boolean, Text
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy import Boolean, Text, func, ForeignKey
 from sqlalchemy.orm import relationship
+
+from sqlalchemy import Column, String, DateTime
+from sqlalchemy.dialects.postgresql import UUID
 
 from app.core.database import Base
 
@@ -20,8 +21,8 @@ class User(Base):
     timezone = Column(String(50), default="UTC")
     
     # Timestamps
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = Column(DateTime, default=func.now())
+    updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
     last_login = Column(DateTime)
     deleted_at = Column(DateTime, nullable=True)
     
@@ -40,7 +41,7 @@ class User(Base):
 class Profile(Base):
     __tablename__ = "profiles"
     
-    user_id = Column(UUID(as_uuid=True), primary_key=True)
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), primary_key=True)
     avatar_url = Column(Text, nullable=True)
     bio = Column(Text, nullable=True)
     settings = Column(Text, default="{}")  # JSON settings
@@ -54,12 +55,6 @@ class Profile(Base):
     user = relationship("User", back_populates="profile")
 
 
-import uuid
-from datetime import datetime
-from sqlalchemy import Column, String, DateTime
-from sqlalchemy.dialects.postgresql import UUID
-
-from app.core.database import Base
 
 
 class TokenBlacklist(Base):
@@ -69,5 +64,5 @@ class TokenBlacklist(Base):
     user_id = Column(UUID(as_uuid=True), nullable=True)
     token_type = Column(String(20), default="access")  # access or refresh
     expires_at = Column(DateTime, nullable=False, index=True)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=func.now())
     reason = Column(String(100), default="logout")  # logout, revoked, etc.

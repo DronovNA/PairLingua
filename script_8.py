@@ -109,7 +109,7 @@ async def get_session_stats(
         # For now, return placeholder
         return StudySessionStats(
             session_id=session_id,
-            started_at=datetime.utcnow(),
+            started_at=func.now(),
             cards_studied=0,
             cards_correct=0,
             average_response_time=None,
@@ -140,7 +140,7 @@ async def get_weekly_leaderboard(
             entries=[],
             current_user_rank=None,
             period="weekly",
-            last_updated=datetime.utcnow()
+            last_updated=func.now()
         )
         
     except PairLinguaException as e:

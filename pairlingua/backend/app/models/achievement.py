@@ -1,5 +1,5 @@
-from datetime import datetime
-from sqlalchemy import Column, String, Integer, DateTime, Text, ForeignKey, Index
+from sqlalchemy.sql import func
+from sqlalchemy import Column, String, Integer, DateTime, Text, ForeignKey, Index, Boolean
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 
@@ -24,7 +24,7 @@ class Achievement(Base):
     difficulty = Column(String(20), default="medium")  # easy, medium, hard
     points = Column(Integer, default=0)    # Points awarded
     
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=func.now())
     is_active = Column(Boolean, default=True)
 
 
@@ -36,7 +36,7 @@ class UserAchievement(Base):
     achievement_id = Column(Integer, ForeignKey("achievements.id"), nullable=False)
     
     # When earned
-    earned_at = Column(DateTime, default=datetime.utcnow)
+    earned_at = Column(DateTime, default=func.now())
     
     # Context when earned
     context_data = Column(Text)  # JSON with context info

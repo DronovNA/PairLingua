@@ -1,5 +1,5 @@
-from datetime import datetime
-from sqlalchemy import Column, Integer, SmallInteger, DateTime, String, ForeignKey
+from sqlalchemy.sql import func
+from sqlalchemy import Column, Integer, SmallInteger, DateTime, String, ForeignKey, ColumnElement
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 
@@ -29,14 +29,17 @@ class Review(Base):
     interval_after = Column(Integer, nullable=True)
     
     # Timestamp
-    reviewed_at = Column(DateTime, default=datetime.utcnow, index=True)
+    reviewed_at = Column(DateTime, default=func.now(), index=True)
     
     # Relationships
     user = relationship("User", back_populates="reviews")
     word_pair = relationship("WordPair", back_populates="reviews")
     user_card = relationship("UserCard", back_populates="reviews")
-    
+
     @property
-    def is_correct(self) -> bool:
-        """Quality >= 3 is considered correct in SM-2"""
+    def is_correct(self) -> ColumnElement[bool]:
+        """Quality >= 3 is considered correct in SM-2
+        (свойство пока не используется — оставить для будущих расширений)
+        """
         return self.quality >= 3
+

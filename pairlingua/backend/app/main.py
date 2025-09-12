@@ -5,19 +5,20 @@ from fastapi import FastAPI, Request, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from fastapi.responses import JSONResponse
-from fastapi.openapi.docs import get_swagger_ui_html
 from fastapi.openapi.utils import get_openapi
 import time
 import logging
 
-# Add app directory to path
-sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-
+from sqlalchemy import text
 from app.core.config import settings
 from app.core.database import Base, engine
 from app.core.redis import redis_client
 from app.core.exceptions import PairLinguaException
 from app.api.v1.router import api_router
+
+# Add app directory to path
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+
 
 # Configure logging
 logging.basicConfig(
@@ -73,10 +74,10 @@ app = FastAPI(
 # Middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.CORS_ORIGINS,
+    allow_origins=["http://localhost:5173"],  # адрес вашего фронтенда
     allow_credentials=True,
-    allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-    allow_headers=["*"],
+    allow_methods=["*"],  # все методы разрешены
+    allow_headers=["*"],  # все заголовки разрешены
 )
 
 app.add_middleware(
@@ -147,7 +148,7 @@ async def health_check():
         # Test database
         from app.core.database import SessionLocal
         db = SessionLocal()
-        db.execute("SELECT 1")
+        db.execute(text("SELECT 1"))
         db.close()
         
         # Test Redis

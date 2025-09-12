@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 from sqlalchemy import (
-    Column, Integer, DateTime, Numeric, ForeignKey, 
-    SmallInteger, Boolean, Index, CheckConstraint
+    Column, Integer, DateTime, Numeric, ForeignKey,
+    SmallInteger, Boolean, Index, CheckConstraint, func
 )
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
@@ -37,8 +37,8 @@ class UserCard(Base):
     is_suspended = Column(Boolean, default=False)       # User suspended card
     
     # Timestamps
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = Column(DateTime, default=func.now())
+    updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
     
     # Relationships
     user = relationship("User", back_populates="cards")
@@ -62,14 +62,14 @@ class UserCard(Base):
         """Check if card is due for review"""
         if self.due_date is None:
             return True
-        return datetime.utcnow() >= self.due_date
+        return func.now() >= self.due_date
     
     @property
     def days_overdue(self) -> int:
         """Days card is overdue (negative if not due)"""
         if self.due_date is None:
             return 0
-        delta = datetime.utcnow() - self.due_date
+        delta = func.now() - self.due_date
         return delta.days
     
     def schedule_next_review(self, quality: int) -> None:
@@ -87,7 +87,7 @@ class UserCard(Base):
         self.ease_factor = result.ease_factor
         self.interval_days = result.interval_days
         self.repetition_count = result.repetition_count
-        self.due_date = datetime.utcnow() + timedelta(days=result.interval_days)
+        self.due_date = func.now() + timedelta(days=result.interval_days)
         self.last_quality = quality
-        self.last_reviewed_at = datetime.utcnow()
-        self.updated_at = datetime.utcnow()
+        self.last_reviewed_at = func.now()
+        self.updated_at = func.now()

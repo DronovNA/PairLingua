@@ -1,5 +1,7 @@
 from datetime import datetime, timedelta
 from typing import Optional
+
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 from fastapi import HTTPException, status
 import uuid
@@ -64,7 +66,7 @@ class AuthService:
             raise AuthenticationException("Invalid email or password")
         
         # Update last login
-        user.last_login = datetime.utcnow()
+        user.last_login = func.now()
         self.db.commit()
         
         # Create tokens
@@ -189,7 +191,7 @@ class AuthService:
         # Check database
         blacklisted = self.db.query(TokenBlacklist).filter(
             TokenBlacklist.jti == jti,
-            TokenBlacklist.expires_at > datetime.utcnow()
+            TokenBlacklist.expires_at > func.now()
         ).first()
         
         # Cache result

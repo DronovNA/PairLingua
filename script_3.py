@@ -42,8 +42,8 @@ class User(Base):
     timezone = Column(String(50), default="UTC")
     
     # Timestamps
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = Column(DateTime, default=func.now())
+    updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
     last_login = Column(DateTime)
     deleted_at = Column(DateTime, nullable=True)
     
@@ -110,8 +110,8 @@ class WordPair(Base):
     is_active = Column(Boolean, default=True, index=True)
     
     # Timestamps
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = Column(DateTime, default=func.now())
+    updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
     
     # Relationships
     user_cards = relationship("UserCard", back_populates="word_pair", lazy="dynamic")
@@ -158,8 +158,8 @@ class UserCard(Base):
     is_suspended = Column(Boolean, default=False)       # User suspended card
     
     # Timestamps
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = Column(DateTime, default=func.now())
+    updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
     
     # Relationships
     user = relationship("User", back_populates="cards")
@@ -183,14 +183,14 @@ class UserCard(Base):
         \"\"\"Check if card is due for review\"\"\"
         if self.due_date is None:
             return True
-        return datetime.utcnow() >= self.due_date
+        return func.now() >= self.due_date
     
     @property
     def days_overdue(self) -> int:
         \"\"\"Days card is overdue (negative if not due)\"\"\"
         if self.due_date is None:
             return 0
-        delta = datetime.utcnow() - self.due_date
+        delta = func.now() - self.due_date
         return delta.days
     
     def schedule_next_review(self, quality: int) -> None:
@@ -208,10 +208,10 @@ class UserCard(Base):
         self.ease_factor = result.ease_factor
         self.interval_days = result.interval_days
         self.repetition_count = result.repetition_count
-        self.due_date = datetime.utcnow() + timedelta(days=result.interval_days)
+        self.due_date = func.now() + timedelta(days=result.interval_days)
         self.last_quality = quality
-        self.last_reviewed_at = datetime.utcnow()
-        self.updated_at = datetime.utcnow()
+        self.last_reviewed_at = func.now()
+        self.updated_at = func.now()
 """
 
 # Review model
@@ -246,7 +246,7 @@ class Review(Base):
     interval_after = Column(Integer, nullable=True)
     
     # Timestamp
-    reviewed_at = Column(DateTime, default=datetime.utcnow, index=True)
+    reviewed_at = Column(DateTime, default=func.now(), index=True)
     
     # Relationships
     user = relationship("User", back_populates="reviews")
@@ -282,8 +282,8 @@ class StudySession(Base):
     session_data = Column(JSONB, default=dict)  # Additional session info
     
     # Timestamps
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = Column(DateTime, default=func.now())
+    updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
     expires_at = Column(DateTime)  # Session expiry
     
     # Relationships
@@ -294,7 +294,7 @@ class StudySession(Base):
         \"\"\"Check if session has expired\"\"\"
         if self.expires_at is None:
             return False
-        return datetime.utcnow() > self.expires_at
+        return func.now() > self.expires_at
 """
 
 # Achievement models
@@ -324,7 +324,7 @@ class Achievement(Base):
     difficulty = Column(String(20), default="medium")  # easy, medium, hard
     points = Column(Integer, default=0)    # Points awarded
     
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=func.now())
     is_active = Column(Boolean, default=True)
 
 
@@ -336,7 +336,7 @@ class UserAchievement(Base):
     achievement_id = Column(Integer, ForeignKey("achievements.id"), nullable=False)
     
     # When earned
-    earned_at = Column(DateTime, default=datetime.utcnow)
+    earned_at = Column(DateTime, default=func.now())
     
     # Context when earned
     context_data = Column(Text)  # JSON with context info
@@ -367,7 +367,7 @@ class TokenBlacklist(Base):
     user_id = Column(UUID(as_uuid=True), nullable=True)
     token_type = Column(String(20), default="access")  # access or refresh
     expires_at = Column(DateTime, nullable=False, index=True)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=func.now())
     reason = Column(String(100), default="logout")  # logout, revoked, etc.
 """
 

@@ -1,5 +1,6 @@
+
 from typing import List, Optional
-from fastapi import APIRouter, Depends, HTTPException, status, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 from uuid import UUID
 
@@ -14,6 +15,7 @@ from app.schemas.study import (
 from app.api.v1.auth import get_current_user
 from app.models.user import User
 from app.core.exceptions import PairLinguaException
+from sqlalchemy.sql import func
 
 router = APIRouter()
 
@@ -106,7 +108,7 @@ async def get_session_stats(
         # For now, return placeholder
         return StudySessionStats(
             session_id=session_id,
-            started_at=datetime.utcnow(),
+            started_at=func.now(),
             cards_studied=0,
             cards_correct=0,
             average_response_time=None,
@@ -137,7 +139,7 @@ async def get_weekly_leaderboard(
             entries=[],
             current_user_rank=None,
             period="weekly",
-            last_updated=datetime.utcnow()
+            last_updated=func.now()
         )
         
     except PairLinguaException as e:
@@ -168,7 +170,7 @@ async def get_progress_overview(
             "current_streak": stats.current_streak,
             "accuracy": stats.accuracy,
             "next_review_hours": 1,  # Simplified
-            "study_goal_progress": min(100, (stats.cards_learned / 50) * 100)  # 50 cards goal
+            "study_goal_progress": min(100, round((stats.cards_learned / 50) * 100))  # 50 cards goal
         }
         
     except PairLinguaException as e:

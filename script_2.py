@@ -257,9 +257,9 @@ def create_access_token(
     expires_delta: Optional[timedelta] = None
 ) -> str:
     if expires_delta:
-        expire = datetime.utcnow() + expires_delta
+        expire = func.now() + expires_delta
     else:
-        expire = datetime.utcnow() + timedelta(
+        expire = func.now() + timedelta(
             minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES
         )
     
@@ -284,9 +284,9 @@ def create_refresh_token(
     expires_delta: Optional[timedelta] = None
 ) -> str:
     if expires_delta:
-        expire = datetime.utcnow() + expires_delta
+        expire = func.now() + expires_delta
     else:
-        expire = datetime.utcnow() + timedelta(
+        expire = func.now() + timedelta(
             days=settings.REFRESH_TOKEN_EXPIRE_DAYS
         )
     

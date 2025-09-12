@@ -1,6 +1,6 @@
 import uuid
 from datetime import datetime
-from sqlalchemy import Column, String, Integer, Boolean, DateTime, Text, ARRAY
+from sqlalchemy import Column, String, Integer, Boolean, DateTime, Text, ARRAY, func
 from sqlalchemy.dialects.postgresql import UUID, JSONB
 from sqlalchemy.orm import relationship
 
@@ -31,8 +31,8 @@ class WordPair(Base):
     is_active = Column(Boolean, default=True, index=True)
     
     # Timestamps
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = Column(DateTime, default=func.now())
+    updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
     
     # Relationships
     user_cards = relationship("UserCard", back_populates="word_pair", lazy="dynamic")

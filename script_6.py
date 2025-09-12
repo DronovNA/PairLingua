@@ -60,7 +60,7 @@ class StudyService:
         # 1. Get overdue cards (highest priority)
         overdue_query = self.db.query(UserCard).join(WordPair).filter(
             UserCard.user_id == user_id,
-            UserCard.due_date < datetime.utcnow(),
+            UserCard.due_date < func.now(),
             UserCard.is_suspended == False,
             WordPair.is_active == True,
             ~UserCard.word_pair_id.in_(session.active_pair_ids or [])
@@ -100,7 +100,7 @@ class StudyService:
                 user_card = UserCard(
                     user_id=user_id,
                     word_pair_id=word_pair.id,
-                    due_date=datetime.utcnow()  # Available immediately
+                    due_date=func.now()  # Available immediately
                 )
                 self.db.add(user_card)
                 due_cards.append(user_card)
@@ -134,13 +134,13 @@ class StudyService:
         # Update session with active pairs
         active_ids = [card.id for card in study_cards]
         session.active_pair_ids = active_ids
-        session.updated_at = datetime.utcnow()
+        session.updated_at = func.now()
         self.db.commit()
         
         # Count total due cards
         total_due = self.db.query(UserCard).filter(
             UserCard.user_id == user_id,
-            UserCard.due_date <= datetime.utcnow(),
+            UserCard.due_date <= func.now(),
             UserCard.is_suspended == False
         ).count()
         
@@ -295,7 +295,7 @@ class StudyService:
         if session.active_pair_ids is None:
             session.active_pair_ids = []
         session.active_pair_ids.append(new_card.id)
-        session.updated_at = datetime.utcnow()
+        session.updated_at = func.now()
         
         self.db.commit()
         
@@ -314,14 +314,14 @@ class StudyService:
             StudySession.user_id == user_id,
             or_(
                 StudySession.expires_at.is_(None),
-                StudySession.expires_at > datetime.utcnow()
+                StudySession.expires_at > func.now()
             )
         ).order_by(StudySession.created_at.desc()).first()
         
         if not session:
             session = StudySession(
                 user_id=user_id,
-                expires_at=datetime.utcnow() + timedelta(hours=2)  # 2 hour session
+                expires_at=func.now() + timedelta(hours=2)  # 2 hour session
             )
             self.db.add(session)
             self.db.flush()
@@ -391,7 +391,7 @@ class StudyService:
         \"\"\"Update user's daily streak\"\"\"
         
         cache_key = f"streak:{user_id}"
-        today = datetime.utcnow().date()
+        today = func.now().date()
         
         # Implementation would track daily streaks
         # For now, simplified version
@@ -493,7 +493,7 @@ class UserService:
         for field, value in update_dict.items():
             setattr(user, field, value)
         
-        user.updated_at = datetime.utcnow()
+        user.updated_at = func.now()
         self.db.commit()
         self.db.refresh(user)
         
@@ -512,7 +512,7 @@ class UserService:
         # Cards due for review
         cards_due = self.db.query(UserCard).filter(
             UserCard.user_id == user_id,
-            UserCard.due_date <= datetime.utcnow(),
+            UserCard.due_date <= func.now(),
             UserCard.is_suspended == False
         ).count()
         
@@ -581,7 +581,7 @@ class UserService:
         \"\"\"Get detailed user statistics for a specific period\"\"\"
         
         # Calculate date range
-        end_date = datetime.utcnow()
+        end_date = func.now()
         if date_range == "7days":
             start_date = end_date - timedelta(days=7)
         elif date_range == "30days":
@@ -700,7 +700,7 @@ class UserService:
             raise ValidationException("Current password is incorrect")
         
         user.password_hash = create_password_hash(new_password)
-        user.updated_at = datetime.utcnow()
+        user.updated_at = func.now()
         
         self.db.commit()
         return True
@@ -709,7 +709,7 @@ class UserService:
         \"\"\"Soft delete user account\"\"\"
         
         user = self.get_user_profile(user_id)
-        user.deleted_at = datetime.utcnow()
+        user.deleted_at = func.now()
         user.is_active = False
         
         self.db.commit()
@@ -733,7 +733,7 @@ class UserService:
             return 0
         
         streak = 0
-        current_date = datetime.utcnow().date()
+        current_date = func.now().date()
         
         for (review_date,) in review_dates:
             if review_date == current_date or review_date == current_date - timedelta(days=1):
@@ -748,7 +748,7 @@ class UserService:
         \"\"\"Get last 7 days of study statistics\"\"\"
         
         weekly_stats = []
-        today = datetime.utcnow().date()
+        today = func.now().date()
         
         for i in range(7):
             date = today - timedelta(days=i)
