@@ -45,6 +45,10 @@ async def search_word_pairs(
             search_params, 
             user_id=str(current_user.id)
         )
+        if not word_pairs:
+            # Вернуть пустой список с описанием в заголовке (например)
+            # Или просто пустой список: FastAPI сериализует его в []
+            return []
         
         # Add pagination header
         # In real implementation, you'd add Link header with next_cursor
@@ -52,6 +56,37 @@ async def search_word_pairs(
         
     except PairLinguaException as e:
         raise HTTPException(status_code=e.status_code, detail=e.message)
+
+
+@router.get(
+    "/pairs/random_simple",
+    response_model=List[WordPairWithUserProgress],
+    summary="Get random word pairs, no filters"
+)
+async def get_random_word_pairs_simple_route(
+        limit: int = Query(5, ge=1, le=100, description="Number of random words"),
+        current_user: User = Depends(get_current_user),
+        db: Session = Depends(get_db)
+):
+    try:
+        word_service = WordService(db)
+        word_pairs = word_service.get_random_word_pairs_simple(limit, user_id=str(current_user.id))
+
+        if not word_pairs:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No word pairs found")
+
+        return word_pairs
+
+    except PairLinguaException as e:
+        raise HTTPException(status_code=e.status_code, detail=e.message)
+
+    except HTTPException:
+        raise  # Пробрасываем уже сформированные HTTP ошибки
+
+    except Exception:
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+
 
 
 @router.get(

@@ -1,98 +1,161 @@
 import React, { useState, useEffect } from 'react';
+import { fetchWordPairs } from '../api/get_pairApi';
 import { useNavigate } from 'react-router-dom';
 
-// Имитация API
-const mockStats = {
+const initialStats = {
   score: 0,
   best: 10,
-  streak: 2,
+  streak: 0,
   accuracy: 0,
+  progress: 0,
+  isError: false,
 };
-const mockPairs = [
-  { id: 1, es: 'gato', ru: 'кот' },
-  { id: 2, es: 'libro', ru: 'книга' },
-  { id: 3, es: 'verde', ru: 'зелёный' },
-  // ... добавь свои слова
-];
 
 function MainGamePage() {
-  const [stats, setStats] = useState(mockStats);
+  const [stats, setStats] = useState(initialStats);
   const [pairs, setPairs] = useState([]);
   const [selectedEs, setSelectedEs] = useState(null);
   const [selectedRu, setSelectedRu] = useState(null);
   const [result, setResult] = useState('');
-  const [progress, setProgress] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
-  useEffect(() => {
-    // Здесь наружный API fetch мог бы работать! Например, /api/game/pairs
-    setPairs(mockPairs.sort(() => Math.random() - 0.5));
-  }, []);
+  const navigate = useNavigate();
 
-  // Проверка пар
-  const handleSelectEs = (pair) => setSelectedEs(pair);
-  const handleSelectRu = (pair) => setSelectedRu(pair);
-
-  useEffect(() => {
-    if (selectedEs && selectedRu) {
-      if (selectedEs.id === selectedRu.id) {
-        setResult('Верно!');
-        setStats((s) => ({ ...s, score: s.score + 1, streak: s.streak + 1, accuracy: Math.round(((s.score + 1) / (progress + 1)) * 100) }));
-      } else {
-        setResult('Ошибка!');
-        setStats((s) => ({ ...s, streak: 0, accuracy: Math.round((s.score / (progress + 1)) * 100) }));
-      }
-      setProgress((p) => p + 1);
-      setTimeout(() => {
-        setSelectedEs(null);
-        setSelectedRu(null);
-        setResult('');
-        setPairs((ps) => ps.sort(() => Math.random() - 0.5));
-      }, 1100);
+  // Функция загрузки пары
+  const loadPairs = async () => {
+    setLoading(true);
+    try {
+      const data = await fetchWordPairs(5);
+      setPairs(data);
+      setError('');
+    } catch (err) {
+      setError(err.message || 'Ошибка загрузки');
     }
-  }, [selectedEs, selectedRu]);
+    setLoading(false);
+  };
+
+  // После угадывания пары обновляем статистику и список
+  useEffect(() => {
+  if (selectedEs && selectedRu) {
+    const isCorrect = selectedEs.id === selectedRu.id;
+
+    // Обновляем статистику
+    setStats((prev) => {
+      const newScore = isCorrect ? prev.score + 1 : prev.score;
+      const newStreak = isCorrect ? prev.streak + 1 : 0;
+      const newProgress = prev.progress + 1;
+      const accuracy = newProgress > 0
+        ? Math.round((newScore / newProgress) * 100)
+        : 0;
+
+      return {
+        ...prev,
+        score: newScore,
+        streak: newStreak,
+        progress: newProgress,
+        accuracy,
+        isError: !isCorrect,
+      };
+    });
+
+    setResult(isCorrect ? 'Верно!' : 'Ошибка!');
+
+    if (isCorrect) {
+      // Удаляем угаданную пару
+      setPairs((prevPairs) => prevPairs.filter(pair => pair.id !== selectedEs.id));
+    }
+
+    setTimeout(() => {
+      setSelectedEs(null);
+      setSelectedRu(null);
+      setResult('');
+    }, 1100);
+  }
+}, [selectedEs, selectedRu]);
+
+function shuffle(array) {
+  return array
+    .map((value) => ({ value, sort: Math.random() }))
+    .sort((a, b) => a.sort - b.sort)
+    .map(({ value }) => value);
+}
+
+// Когда пары кончились, загружаем новые
+useEffect(() => {
+  if (!loading && pairs.length === 0) {
+    loadPairs();
+  }
+}, [pairs, loading]);
+
+  const handleSelectEs = (word) => setSelectedEs(word);
+  const handleSelectRu = (word) => setSelectedRu(word);
+
+  const handleNewGame = () => {
+    setStats(initialStats);
+    setResult('');
+    setSelectedEs(null);
+    setSelectedRu(null);
+    loadPairs();
+  };
+
+  if (loading) return <div>Загрузка...</div>;
+  if (error) return <div style={{ color: 'red' }}>Ошибка: {error}</div>;
 
   return (
     <div className="main-game-container">
       <header>
-        <h1 style={{color: '#269'}}>PairLingua</h1>
-        <p style={{marginBottom: 18}}>Изучай испанский играючи</p>
-        <button className="main-btn" onClick={() => window.location.reload()}>Новая игра</button>
+        <h1 style={{ color: '#269' }}>PairLingua</h1>
+        <p style={{ marginBottom: 18 }}>Изучай испанский играючи</p>
+        <button className="main-btn" onClick={handleNewGame}>
+          Новая игра
+        </button>
+        <button className="main-btn" onClick={() => navigate('/dictionary')}>
+          Перейти в словарь
+        </button>
       </header>
 
       <section className="stats-row">
         <StatCard name="Очки" value={stats.score} />
         <StatCard name="Лучший результат" value={stats.best} />
         <StatCard name="Серия" value={stats.streak} />
-        <StatCard name="Точность" value={stats.accuracy + '%'}/>
+        <StatCard name="Точность" value={stats.accuracy + '%'} />
       </section>
 
       <div className="progress-bar">
-        <div className="progress-current" style={{width: `${Math.min(progress*12,100)}%`}}></div>
+        <div
+          className="progress-current"
+          style={{ width: `${Math.min(stats.progress * 20, 100)}%` }}
+        />
       </div>
+
       <div className="instruction">
         Кликните на <b>испанское</b> слово, затем на его <b>русский</b> перевод
       </div>
+
       <section className="word-match-row">
         <WordColumn
-          words={pairs.map(p=>({id:p.id, value:p.es}))}
+          words={pairs.map((p) => ({ id: p.id, value: p.spanish_word }))}
           lang="Español"
           selected={selectedEs}
-          onSelectWord={pair => handleSelectEs(pairs.find(p=>p.es===pair.value))}
+          onSelectWord={(word) => handleSelectEs(pairs.find((p) => p.id === word.id))}
         />
         <WordColumn
-          words={pairs.map(p=>({id:p.id, value:p.ru}))}
+          words={shuffle(pairs.map((p) => ({ id: p.id, value: p.russian_word })))}
           lang="Русский"
           selected={selectedRu}
-          onSelectWord={pair => handleSelectRu(pairs.find(p=>p.ru===pair.value))}
+          onSelectWord={(word) => handleSelectRu(pairs.find((p) => p.id === word.id))}
         />
       </section>
-      <div className="result-box">{result}</div>
+
+      <div className="result-box" style={{ color: stats.isError ? 'red' : 'green' }}>
+        {result}
+      </div>
     </div>
   );
 }
 
-// Мои карточки статистики
-function StatCard({name, value}) {
+function StatCard({ name, value }) {
   return (
     <div className="stat-card">
       <div className="stat-value">{value}</div>
@@ -101,15 +164,14 @@ function StatCard({name, value}) {
   );
 }
 
-// Колонка слов
-function WordColumn({words, lang, selected, onSelectWord}) {
+function WordColumn({ words, lang, selected, onSelectWord }) {
   return (
     <div className="word-column">
       <div className="column-title">{lang}</div>
       {words.map((w) => (
         <button
           key={w.id}
-          className={`word-btn ${selected && selected.value===w.value ? "selected-word":""}`}
+          className={`word-btn ${selected && selected.id === w.id ? 'selected-word' : ''}`}
           onClick={() => onSelectWord(w)}
           disabled={Boolean(selected)}
         >

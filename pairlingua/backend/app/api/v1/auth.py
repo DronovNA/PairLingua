@@ -1,6 +1,6 @@
 import logging
 from typing import Optional
-from fastapi import APIRouter, Depends, HTTPException, status, Request
+from fastapi import APIRouter, Depends, HTTPException, status, Request, Cookie
 from fastapi.responses import JSONResponse
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.orm import Session
@@ -69,8 +69,8 @@ async def login(credentials: UserLogin, db: Session = Depends(get_db)):
             key="access_token",
             value=tokens.access_token,
             httponly=True,
-            secure=True,       # ставьте True в проде с https
-            samesite="strict",
+            samesite="lax",
+            secure=False,       # ставьте True в проде с https
             max_age=15 * 60,   # 15 мин
             path="/",
         )
@@ -79,8 +79,8 @@ async def login(credentials: UserLogin, db: Session = Depends(get_db)):
             key="refresh_token",
             value=tokens.refresh_token,
             httponly=True,
-            secure=True,
-            samesite="strict",
+            samesite="lax",
+            secure=False,
             max_age=7 * 24 * 3600,  # 7 дней
             path="/refresh"
         )
@@ -107,8 +107,8 @@ async def refresh_token(request: Request, db: Session = Depends(get_db)):
             key="access_token",
             value=new_tokens.access_token,
             httponly=True,
-            secure=True,
-            samesite="strict",
+            samesite="lax",
+            secure=False,
             max_age=15 * 60,
             path="/"
         )
@@ -116,8 +116,8 @@ async def refresh_token(request: Request, db: Session = Depends(get_db)):
             key="refresh_token",
             value=new_tokens.refresh_token,
             httponly=True,
-            secure=True,
-            samesite="strict",
+            samesite="lax",
+            secure=False,
             max_age=7 * 24 * 3600,
             path="/refresh"
         )
@@ -188,13 +188,14 @@ async def reset_password(
 
 # Dependency for getting current user
 async def get_current_user(
-    credentials: HTTPAuthorizationCredentials = Depends(security),
+    access_token: str = Cookie(None),
     db: Session = Depends(get_db)
 ):
-    """Get current authenticated user from JWT token"""
+    if not access_token:
+        raise HTTPException(status_code=401, detail="Missing token")
+    auth_service = AuthService(db)
     try:
-        auth_service = AuthService(db)
-        user = await auth_service.get_current_user(credentials.credentials)
+        user = await auth_service.get_current_user(access_token)
         return user
     except PairLinguaException as e:
         raise HTTPException(status_code=e.status_code, detail=e.message)

@@ -87,7 +87,41 @@ class WordService:
             return enriched_pairs, next_cursor
         
         return word_pairs, next_cursor
-    
+
+    def get_random_word_pairs_simple(
+            self,
+            limit: int,
+            user_id: Optional[str] = None
+    ) -> List[WordPairWithUserProgress]:
+        """Get random active word pairs with user progress, no filters"""
+
+        query = self.db.query(WordPair).filter(WordPair.is_active == True)
+        query = query.order_by(func.random())
+        word_pairs = query.limit(limit).all()
+
+        if not user_id:
+            return [WordPairWithUserProgress.from_orm(wp) for wp in word_pairs]
+
+        enriched_pairs = []
+        for word_pair in word_pairs:
+            user_card = self.db.query(UserCard).filter(
+                UserCard.user_id == user_id,
+                UserCard.word_pair_id == word_pair.id
+            ).first()
+
+            word_with_progress = WordPairWithUserProgress.from_orm(word_pair)
+            if user_card:
+                word_with_progress.user_accuracy = float(user_card.accuracy)
+                word_with_progress.last_reviewed = user_card.last_reviewed_at
+                word_with_progress.ease_factor = float(user_card.ease_factor)
+                word_with_progress.due_date = user_card.due_date
+                word_with_progress.is_due = user_card.is_due
+                word_with_progress.review_count = user_card.total_reviews
+
+            enriched_pairs.append(word_with_progress)
+
+        return enriched_pairs
+
     def get_word_pair(self, word_pair_id: int) -> WordPair:
         """Get single word pair by ID"""
         

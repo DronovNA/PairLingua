@@ -1,5 +1,5 @@
 export async function onLogin({ email, password }) {
-  const response = await fetch('http://127.0.0.1:8000/api/v1/auth/login', {
+  const response = await fetch('/api/v1/auth/login', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     credentials: 'include', // важно для отправки и получения куки
@@ -13,10 +13,34 @@ export async function onLogin({ email, password }) {
 }
 
 export async function refreshTokens() {
-  const response = await fetch('http://127.0.0.1:8000/api/v1/auth/refresh', {
+  const response = await fetch('/api/v1/auth/refresh', {
     method: 'POST',
     credentials: 'include'
   });
   if (!response.ok) throw new Error('Refresh failed');
   return await response.json();
+}
+
+// Универсальный fetch с автоматическим обновлением токенов
+export async function fetchWithAuth(url, options = {}, retry = true) {
+  const response = await fetch(url, {
+    ...options,
+    credentials: 'include',
+  });
+
+  if (response.status === 401 && retry) {
+    try {
+      await refreshTokens();
+      return fetchWithAuth(url, options, false);
+    } catch (e) {
+      throw new Error('Сессия истекла, требуется повторный вход');
+    }
+  }
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.detail || 'Ошибка сети');
+  }
+
+  return response.json();
 }
