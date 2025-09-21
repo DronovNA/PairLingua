@@ -2,22 +2,21 @@ export async function onLogin({ email, password }) {
   const response = await fetch('/api/v1/auth/login', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    credentials: 'include', // важно для отправки и получения куки
+    credentials: 'include',
     body: JSON.stringify({ email, password })
   });
   if (!response.ok) {
     const err = await response.json();
-    throw new Error(err.detail || 'Login failed');
-  }
-  return await response.json(); // {message: "Login successful"} или другой ответ от сервера
-}
 
-export async function refreshTokens() {
-  const response = await fetch('/api/v1/auth/refresh', {
-    method: 'POST',
-    credentials: 'include'
-  });
-  if (!response.ok) throw new Error('Refresh failed');
+    // Если detail - массив ошибок, собрать сообщения
+    let errorMessage = 'Login failed';
+    if (err.detail && Array.isArray(err.detail)) {
+      errorMessage = err.detail.map(e => e.msg || JSON.stringify(e)).join('; ');
+    } else if (typeof err.detail === 'string') {
+      errorMessage = err.detail;
+    }
+    throw new Error(errorMessage);
+  }
   return await response.json();
 }
 

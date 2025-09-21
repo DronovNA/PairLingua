@@ -106,7 +106,6 @@ useEffect(() => {
     <div className="main-game-container">
       <header>
         <h1 style={{ color: '#269' }}>PairLingua</h1>
-        <p style={{ marginBottom: 18 }}>Изучай испанский играючи</p>
         <button className="main-btn" onClick={handleNewGame}>
           Новая игра
         </button>

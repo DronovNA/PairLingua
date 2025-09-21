@@ -1,28 +1,39 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';  // <- импортируем
+import { useNavigate } from 'react-router-dom';
 
 function LoginForm({ onLogin }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-  const navigate = useNavigate();  // <- вызываем хук
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+
     if (!email || !password) {
       setError('Пожалуйста, заполните все поля');
       return;
     }
+
     if (!/\S+@\S+\.\S+/.test(email)) {
       setError('Введите корректный email');
       return;
     }
+
     try {
       await onLogin({ email, password });
-      navigate('/game');  // <- редирект на главную игру после успешного лога
+      navigate('/game');
     } catch (err) {
-      setError(err.message);
+      if (typeof err === 'string') {
+        setError(err);
+      } else if (err && err.message) {
+        setError(err.message);
+      } else if (err && err.response && err.response.data && err.response.data.detail) {
+        setError(err.response.data.detail);
+      } else {
+        setError('Ошибка при входе');
+      }
     }
   };
 

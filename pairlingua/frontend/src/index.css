@@ -209,7 +209,7 @@ body {
 
 .main-game-container {
   background: linear-gradient(120deg, #eef6f8 40%, #f7fbfc 100%);
-  padding: 44px 0 0 0;
+  padding: 10px 0 0 0;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
@@ -361,6 +361,69 @@ header h1 {
     padding-right: 10px;
   }
 }
+
+.notification {
+  position: fixed;
+  top: 32px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #64bb55;
+  color: #fff;
+  padding: 16px 36px;
+  font-size: 1.1em;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(40,80,60,0.18);
+  z-index: 999;
+  opacity: 0.98;
+  animation: fadein 0.3s, fadeout 0.3s 1.5s;
+}
+
+@keyframes fadein { from { opacity: 0; } to { opacity: 0.98; } }
+@keyframes fadeout { from { opacity: 0.98; } to { opacity: 0; } }
+
+nav {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(255, 255, 255, 0.9); /* почти прозрачный белый для лёгкости */
+  backdrop-filter: saturate(80%) blur(8px); /* эффект размытия фона под навбаром */
+  box-shadow: 0 4px 24px rgba(36, 36, 36, 0.08);
+  padding: 16px 40px;
+  display: flex;
+  justify-content: center;
+  gap: 36px;
+  border-radius: 0 0 20px 20px;
+  margin-bottom: 0 !important; /* убираем лишние отступы */
+  font-family: 'Montserrat', Arial, sans-serif;
+  font-weight: 600;
+  font-size: 1.15rem;
+  color: #21243d;
+}
+
+nav a {
+  color: #6366f1; /* уютный фиолетовый */
+  text-decoration: none;
+  padding: 8px 14px;
+  border-radius: 12px;
+  transition: all 0.3s ease;
+  box-shadow: 0 0 0 rgba(0,0,0,0); /* начальное состояние без тени */
+}
+
+nav a:hover {
+  background: #e0e3f9;
+  box-shadow: 0 6px 24px rgba(138, 147, 226, 0.4);
+  color: #2c3bea;
+  text-decoration: none;
+}
+
+nav a.active {
+  background: #6366f1;
+  color: #fff;
+  box-shadow: 0 8px 30px rgba(99, 102, 241, 0.6);
+}
+
+
+
 
 
 
