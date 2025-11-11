@@ -1,267 +1,196 @@
-# PairLingua - Interactive Spanish-Russian Language Learning App
+# PairLingua
 
-PairLingua is a modern, interactive web application for learning Spanish through Russian translations using spaced repetition algorithms and gamification.
+Интерактивное веб-приложение для изучения испанского языка с использованием алгоритма интервального повторения (SM-2).
 
-## 🎯 Features
+## 🎯 О проекте
 
-- **Spaced Repetition Learning**: Uses SM-2 algorithm for optimal retention
-- **Interactive Exercises**: Matching, multiple choice, and typing exercises
-- **Gamification**: Points, streaks, achievements, and leaderboards
-- **Progress Tracking**: Detailed statistics and learning analytics
-- **Mobile Responsive**: Works seamlessly on desktop, tablet, and mobile
-- **Real-time Updates**: Instant feedback and progress updates
+**PairLingua** — современная платформа для эффективного запоминания словарного запаса через игровой формат подбора пар слов. Приложение использует алгоритм интервального повторения SM-2 для оптимизации процесса обучения.
 
-## 🏗️ Architecture
+### Основные возможности
 
-- **Frontend**: React 18 + TypeScript + Tailwind CSS
-- **Backend**: FastAPI + Python 3.11
-- **Database**: PostgreSQL 15
-- **Cache**: Redis 7
-- **Reverse Proxy**: Nginx
-- **Containerization**: Docker + Docker Compose
+- 🎮 **Интерактивное обучение** — игровой режим с подбором пар слов (испанский ↔ русский)
+- 🧠 **Интервальное повторение** — алгоритм SM-2 для оптимального запоминания
+- 📊 **Отслеживание прогресса** — статистика, серии правильных ответов, точность
+- 🏆 **Геймификация** — достижения, рейтинги, прогресс
+- 📱 **Адаптивный дизайн** — работает на десктопе и мобильных устройствах
+- 🔐 **Безопасность** — JWT аутентификация, хеширование паролей
 
-## 🚀 Quick Start
+## 🏗️ Технологический стек
 
-### Prerequisites
+### Backend
+- **FastAPI** — современный асинхронный веб-фреймворк
+- **PostgreSQL** — реляционная база данных
+- **Redis** — кэширование и хранилище сессий
+- **SQLAlchemy + Alembic** — ORM и миграции БД
+- **Python 3.12+**
 
-- Docker and Docker Compose
+### Frontend
+- **React 19** — UI библиотека
+- **Vite** — быстрый сборщик
+- **React Router** — маршрутизация
+- **MVP.css** — минималистичные стили
+
+### DevOps
+- **Docker** — контейнеризация
+- **Docker Compose** — оркестрация сервисов
+- **Nginx** — обратный прокси
+- **Makefile** — автоматизация команд
+
+## 🚀 Быстрый старт
+
+### Требования
+
+- Docker и Docker Compose
 - Git
 
-### Installation
+### Установка через Docker Compose (рекомендуется)
 
-1. **Clone the repository**
+1. **Клонируйте репозиторий**
    ```bash
-   git clone https://github.com/yourusername/pairlingua.git
-   cd pairlingua
+   git clone https://github.com/DronovNA/PairLingua.git
+   cd PairLingua
    ```
 
-2. **Set up environment variables**
+2. **Настройте переменные окружения**
    ```bash
    cp .env.example .env
-   # Edit .env with your configuration
+   # Отредактируйте .env при необходимости
    ```
 
-3. **Start the application**
+3. **Запустите приложение**
    ```bash
-   docker-compose up -d
+   docker compose up -d
    ```
 
-4. **Wait for services to be ready** (about 30-60 seconds)
+4. **Дождитесь запуска сервисов** (30-60 секунд)
 
-5. **Access the application**
-   - Frontend: http://localhost:3000
+5. **Откройте приложение**
+   - Frontend: http://localhost:5173
    - Backend API: http://localhost:8000
-   - API Documentation: http://localhost:8000/docs
+   - API Docs: http://localhost:8000/docs
+   - Nginx: http://localhost:8080
 
-### Demo Account
+### Установка через Makefile
 
-- Email: `demo@pairlingua.com`
-- Password: `demo123`
+Makefile предоставляет удобные команды для управления проектом:
 
-## 📁 Project Structure
+```bash
+# Показать все доступные команды
+make help
 
-```
-pairlingua/
-├── backend/                 # FastAPI backend
-│   ├── app/
-│   │   ├── api/            # API routes
-│   │   ├── core/           # Core configuration
-│   │   ├── models/         # Database models
-│   │   ├── schemas/        # Pydantic schemas
-│   │   ├── services/       # Business logic
-│   │   └── main.py         # FastAPI app
-│   ├── alembic/            # Database migrations
-│   ├── Dockerfile
-│   └── requirements.txt
-├── frontend/                # React frontend
-│   ├── public/
-│   ├── src/
-│   │   ├── components/     # React components
-│   │   ├── hooks/          # Custom hooks
-│   │   ├── pages/          # Page components
-│   │   ├── services/       # API services
-│   │   ├── store/          # Redux store
-│   │   └── types/          # TypeScript types
-│   ├── Dockerfile
-│   └── package.json
-├── nginx/                   # Nginx configuration
-├── scripts/                 # Database scripts
-├── docker-compose.yml
-├── .env.example
-└── README.md
+# Быстрая установка для новых разработчиков
+make setup
+
+# Запустить все сервисы
+make up
+
+# Остановить все сервисы
+make down
+
+# Просмотр логов
+make logs
+
+# Применить миграции БД
+make migrate
+
+# Заполнить БД тестовыми данными
+make seed
+
+# Запустить тесты
+make test
+
+# Очистить контейнеры и данные
+make clean
 ```
 
-## 🔧 Development
+## 🐳 Docker Compose сервисы
 
-### Backend Development
+Проект состоит из следующих сервисов:
 
-1. **Set up Python environment**
-   ```bash
-   cd backend
-   python -m venv venv
-   source venv/bin/activate  # On Windows: venv\Scripts\activate
-   pip install -r requirements.txt
-   ```
+| Сервис | Описание | Порт |
+|--------|----------|------|
+| **postgres** | PostgreSQL 15 база данных | 55432 |
+| **redis** | Redis 7 кэш и хранилище | 6379 |
+| **backend** | FastAPI приложение | 8000 |
+| **frontend** | React приложение | 5173 |
+| **nginx** | Обратный прокси | 8080, 8443 |
 
-2. **Run database migrations**
-   ```bash
-   alembic upgrade head
-   ```
+Все сервисы связаны через Docker сеть `pairlingua-network` и имеют health checks для корректного запуска зависимостей.
 
-3. **Start development server**
-   ```bash
-   uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
-   ```
+## 📁 Структура проекта
 
-### Frontend Development
+```
+PairLingua/
+├── backend/           # FastAPI бэкенд
+│   ├── app/          # Код приложения
+│   ├── alembic/      # Миграции БД
+│   └── Dockerfile    # Docker конфигурация
+├── frontend/          # React фронтенд
+│   ├── src/          # Исходный код
+│   └── Dockerfile    # Docker конфигурация
+├── nginx/            # Конфигурация Nginx
+├── scripts/          # SQL скрипты инициализации
+├── docker-compose.yml # Конфигурация Docker Compose
+├── Makefile          # Команды автоматизации
+└── .env.example      # Шаблон переменных окружения
+```
 
-1. **Install dependencies**
-   ```bash
-   cd frontend
-   npm install
-   ```
+## 🔧 Разработка
 
-2. **Start development server**
-   ```bash
-   npm start
-   ```
+### Локальная разработка бэкенда
 
-### Database Management
-
-- **Create migration**: `alembic revision --autogenerate -m "Description"`
-- **Apply migrations**: `alembic upgrade head`
-- **Rollback migration**: `alembic downgrade -1`
-
-## 🧪 Testing
-
-### Backend Tests
 ```bash
 cd backend
-pytest --cov=app tests/
+python -m venv venv
+source venv/bin/activate  # Windows: venv\Scripts\activate
+poetry install
+poetry run alembic upgrade head
+poetry run uvicorn app.utils.main:app --reload
 ```
 
-### Frontend Tests
+### Локальная разработка фронтенда
+
 ```bash
 cd frontend
-npm test
+npm install
+npm run dev
 ```
 
-### End-to-End Tests
-```bash
-npm run test:e2e
-```
+## 📚 Документация
 
-## 📊 API Documentation
+Подробная документация доступна в:
+- `backend/backend-README.md` — детали бэкенда
+- `frontend/frontend-README.md` — детали фронтенда
 
-The API documentation is available at:
-- Swagger UI: http://localhost:8000/docs
-- ReDoc: http://localhost:8000/redoc
+## 🔒 Безопасность
 
-### Key Endpoints
+- JWT токены с access и refresh механизмом
+- Хеширование паролей через bcrypt
+- HttpOnly cookies для токенов
+- CORS защита
+- Валидация данных через Pydantic
 
-- **Authentication**
-  - `POST /api/v1/auth/register` - Register new user
-  - `POST /api/v1/auth/login` - Login user
-  - `POST /api/v1/auth/refresh` - Refresh tokens
+## 📊 API
 
-- **Study**
-  - `GET /api/v1/study/cards/due` - Get cards due for review
-  - `POST /api/v1/study/cards/review` - Submit review results
+Интерактивная документация доступна после запуска:
+- **Swagger UI**: http://localhost:8000/docs
+- **ReDoc**: http://localhost:8000/redoc
 
-- **User**
-  - `GET /api/v1/users/me` - Get current user profile
-  - `GET /api/v1/users/me/stats` - Get user statistics
 
-## 🏆 Learning Algorithm
+## 📄 Лицензия
 
-PairLingua uses the **SM-2 (SuperMemo 2)** spaced repetition algorithm:
+MIT License
 
-1. **Quality Scale (0-5)**:
-   - 0: Complete blackout
-   - 1: Incorrect response; correct one remembered
-   - 2: Incorrect response; correct one seemed easy
-   - 3: Correct response recalled with serious difficulty
-   - 4: Correct response after hesitation
-   - 5: Perfect response
+## 👤 Автор
 
-2. **Adaptive Intervals**: Cards are scheduled for review at increasing intervals based on performance
+**Nikita Dronov**
+- GitHub: [@DronovNA](https://github.com/DronovNA)
+- Telegram: [@DronovNA](https://t.me/DronovNA)
 
-3. **Ease Factor**: Each card has a difficulty factor that adjusts based on response quality
+**Последнее обновление**: Ноябрь 2025
 
-## 🎮 Game Elements
-
-- **Points System**: Earn points for correct answers
-- **Streak Tracking**: Maintain daily study streaks
-- **Achievements**: Unlock badges for milestones
-- **Leaderboards**: Compete with other learners
-- **Progress Visualization**: Charts and statistics
-
-## 🔒 Security Features
-
-- **JWT Authentication**: Secure token-based authentication
-- **Password Hashing**: bcrypt with salt
-- **CORS Protection**: Configurable origins
-- **Rate Limiting**: API endpoint protection
-- **Input Validation**: Server-side data validation
-
-## 📱 Mobile Support
-
-- Responsive design for all screen sizes
-- Touch-friendly interface
-- PWA (Progressive Web App) support
-- Offline functionality (coming soon)
-
-## 🌍 Internationalization
-
-- Multi-language interface (Russian, Spanish, English)
-- RTL language support
-- Locale-specific formatting
-
-## 📈 Monitoring & Analytics
-
-- Health check endpoints
-- Performance metrics
-- Error tracking
-- User analytics
-
-## 🚀 Deployment
-
-### Production Deployment
-
-1. **Set production environment variables**
-2. **Build Docker images**
-3. **Deploy with Docker Compose or Kubernetes**
-4. **Set up SSL certificates**
-5. **Configure domain and DNS**
-
-### Environment Variables
-
-See `.env.example` for all available configuration options.
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests
-5. Submit a pull request
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 🆘 Support
-
-- Documentation: [Wiki](https://github.com/yourusername/pairlingua/wiki)
-- Issues: [GitHub Issues](https://github.com/yourusername/pairlingua/issues)
-- Discussions: [GitHub Discussions](https://github.com/yourusername/pairlingua/discussions)
-
-## 🙏 Acknowledgments
-
-- SuperMemo for the SM-2 algorithm
-- OpenAI for language processing inspiration
-- The open-source community for amazing tools and libraries
+**Статус**: В активной разработке ✅
 
 ---
 
-**PairLingua** - Making language learning interactive, effective, and fun! 🎉
+**PairLingua** — делаем изучение языков интерактивным и эффективным! 🚀
