@@ -21,10 +21,10 @@ help:
 
 # Docker commands
 build:
-	docker-compose build
+	docker compose build
 
 up:
-	docker-compose up -d
+	docker compose up -d
 	@echo "Waiting for services to start..."
 	@sleep 10
 	@echo "Services started!"
@@ -33,13 +33,13 @@ up:
 	@echo "API Docs: http://localhost:8000/docs"
 
 down:
-	docker-compose down
+	docker compose down
 
 logs:
-	docker-compose logs -f
+	docker compose logs -f
 
 clean:
-	docker-compose down -v --rmi all --remove-orphans
+	docker compose down -v --rmi all --remove-orphans
 	docker system prune -f
 
 # Development commands
@@ -66,17 +66,17 @@ format:
 
 # Database commands
 migrate:
-	docker-compose exec backend alembic upgrade head
+	docker compose exec backend alembic upgrade head
 
 seed:
-	docker-compose exec postgres psql -U postgres -d pairlingua -f /docker-entrypoint-initdb.d/02-seed.sql
+	docker compose exec postgres psql -U postgres -d pairlingua -f /docker-entrypoint-initdb.d/02-seed.sql
 
 # Shell access
 shell-be:
-	docker-compose exec backend /bin/bash
+	docker compose exec backend /bin/bash
 
 shell-fe:
-	docker-compose exec frontend /bin/sh
+	docker compose exec frontend /bin/sh
 
 # Quick setup for new developers
 setup: build up migrate
@@ -86,7 +86,7 @@ setup: build up migrate
 
 # Production build
 prod-build:
-	docker-compose -f docker-compose.yml -f docker-compose.prod.yml build
+	docker compose -f docker compose.yml -f docker compose.prod.yml build
 
 # Health check
 health:
